@@ -1,22 +1,9 @@
 const Order = require('./orderSchema');
 
-exports.getProducts = async (req, res) => {
-    try { //försöker hämta data 
-        const data = await Product.find() //ger en array tillbaka 
-        res.status(200).json(data)
-    }
-    catch (err) { //om det inte går att hämta data
-        res.status(500).json({
-            statusCode: 500,
-            status: false,
-            message: 'Something went wrong when fetching the products',
-            err //skickar med errormeddelande
-        })
-    }
-}
 
-exports.getProductById = (req, res) => {
-    Product.exists({ _id: req.params.id }, (err, result) => {
+
+exports.getOrder = (req, res) => {
+    Order.exists({ userId: req.params.id }, (err, result) => {
         if(err) {
             return res.status(400).json({
                 statusCode: 400,
@@ -26,15 +13,16 @@ exports.getProductById = (req, res) => {
             })
         }
 
-        if(!Product) {
+        if(!Order) {
             return res.status(404).json({
                 statusCode: 404,
                 status: false,
-                message: 'This product does not exist',
+                message: 'This order does not exist',
             })
         }
-        // Product.findOne({ _id: req.params.id }) //om man vill söka efter namn etc
-        Product.findById(req.params.id)
+        // Order.findOne({ _id: req.params.id }) //om man vill söka efter namn etc
+        
+        Order.find({ userId: req.params.id }) 
         .then(data => res.status(200).json(data))
         .catch(err => {
             res.status(500).json({
@@ -47,9 +35,9 @@ exports.getProductById = (req, res) => {
 } 
 
 
-exports.createProduct = (req, res) => {
+exports.createOrder = (req, res) => {
 
-    Product.exists({ name: req.body.name }, (err, result) => { //callbackfunktion, om error skickas fel till err
+    Order.exists({ _id : req.body._id }, (err, result) => { //callbackfunktion, om error skickas fel till err
         
         if(err) {
             return res.status(500).json(err) //skickar tillbaka status 500 och hoppar ur funktionen
@@ -59,24 +47,21 @@ exports.createProduct = (req, res) => {
             return res.status(400).json({ //400 =
                 statusCode: 400,
                 status: false,
-                message: 'A product by that name already exists, please update product instead'
+                message: 'An order by that name already exists, please update order instead'
             })
 
         }
-        // const NewProduct = new Product({}) //använd om vi vill manipulera objektet innan det ska sparas på db
-        // NewProduct.save()
-        Product.create({ //sparar  produkten på databasen direkt
-            name:   req.body.name,
-            short:  req.body.short,
-            desc:   req.body.desc,
-            price:  req.body.price,
-            image:  req.body.image
+        // const NewOrder = new Order({}) //använd om vi vill manipulera objektet innan det ska sparas på db
+        // NewOrder.save()
+        Order.create({ //sparar  produkten på databasen direkt
+            userId:   req.body.userId,
+            purchase: {product:req.body.product, quantity: req.body.quantity}
         }) 
         .then(data => { //ovanstående tar tid. .then används för att den ska vänta på att det blir klart innan .then körs
             res.status(201).json({ //201 = created
                 statusCode: 201,
                 status: true,
-                message: 'Product created successfully',
+                message: 'Order created successfully',
                 data //data = den produkt som skapts
             })
         })
@@ -84,16 +69,16 @@ exports.createProduct = (req, res) => {
             res.status(500).json({ //500 = serverfel
                 statusCode: 500,
                 status: false, 
-                message: 'Failed to create product',
+                message: 'Failed to create order',
                 err
             })
         })
     })
 }
 
-exports.updateProduct = (req, res) => {
+exports.updateOrder = (req, res) => {
 
-    Product.exists({ _id: req.params.id }, (err, result) => {
+    Order.exists({ _id: req.params.id }, (err, result) => {
         
         if(err) {
             return res.status(400).json({
@@ -107,15 +92,15 @@ exports.updateProduct = (req, res) => {
             return res.status(404).json({
                 statusCode: 404, 
                 status: false,
-                message: 'This product does not exist'
+                message: 'This Order does not exist'
             })
         }
-        Product.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true}) //allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
+        Order.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true}) //allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
         .then(data => { // väntar tills det är klart och uppdateringen skickas tillbaka som data
             res.status(200).json({
                 statusCode: 200,
                 status: true,
-                message: 'Product updated successfully',
+                message: 'Order updated successfully',
                 data
             })
         })
@@ -124,7 +109,7 @@ exports.updateProduct = (req, res) => {
                 return res.status(400).json({
                     statusCode: 400,
                     status: false,
-                    message: 'A product with that name already exists',
+                    message: 'An order with that name already exists',
                     err
                 })
             }
@@ -132,7 +117,7 @@ exports.updateProduct = (req, res) => {
             res.status(500).json({
                 statusCode: 500,
                 status: false,
-                message: 'Failed to update product',
+                message: 'Failed to update Order',
                 err
             })
         })
@@ -142,9 +127,9 @@ exports.updateProduct = (req, res) => {
 }
 
 
-exports.deleteProduct = (req, res) => {
+exports.deleteOrder = (req, res) => {
 
-    Product.exists({ _id: req.params.id }, (err, result) => {
+    Order.exists({ _id: req.params.id }, (err, result) => {
         
         if(err) {
             return res.status(400).json({
@@ -159,23 +144,23 @@ exports.deleteProduct = (req, res) => {
             return res.status(404).json({
                 statusCode: 404,
                 status: false,
-                message: 'This product does not exist',
+                message: 'This order does not exist',
             })
         }
         
-        Product.deleteOne({ _id: req.params.id }) //jämför _id med skickat id
+        Order.deleteOne({ _id: req.params.id }) //jämför _id med skickat id
             .then(() => {
                 res.status(201).json({ //201 = created
                     statusCode: 201,
                     status: true,
-                    message: 'Product deleted successfully',
+                    message: 'Order deleted successfully',
                 })
             })
             .catch(err => {
                 res.status(500).json({
                     statusCode: 500,
                     status: false,
-                    message: 'Failed to delete product',
+                    message: 'Failed to delete order',
                     err
                 
                 })
