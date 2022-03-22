@@ -1,4 +1,4 @@
-const Product = require('./productSchema');
+const Order = require('./orderSchema');
 
 exports.getProducts = async (req, res) => {
     try { //försöker hämta data 
