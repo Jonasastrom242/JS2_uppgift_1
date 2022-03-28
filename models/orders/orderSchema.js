@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const orderSchema = mongoose.Schema({
     userId: {type: String, required: true},
-    purchase: {
+    purchase: [{
         product: String, 
-        quantity: Number}
+        quantity: Number}]
     
 }, { timestamps: true });
 

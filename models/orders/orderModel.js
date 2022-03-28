@@ -3,7 +3,7 @@ const Order = require('./orderSchema');
 
 
 exports.getOrder = (req, res) => {
-    Order.exists({ userId: req.params.id }, (err, result) => {
+    Order.exists({ userId: req.userData.id }, (err, result) => {
         if(err) {
             return res.status(400).json({
                 statusCode: 400,
@@ -22,7 +22,7 @@ exports.getOrder = (req, res) => {
         }
         // Order.findOne({ _id: req.params.id }) //om man vill söka efter namn etc
         
-        Order.find({ userId: req.params.id }) 
+        Order.find({ userId: req.userData.id }) 
         .then(data => res.status(200).json(data))
         .catch(err => {
             res.status(500).json({
@@ -44,18 +44,24 @@ exports.createOrder = (req, res) => {
         }
 
         if(result) { //om resultat finns(true) körs return och funktionen hoppas ur
-            return res.status(400).json({ //400 =
-                statusCode: 400,
-                status: false,
-                message: 'An order by that name already exists, please update order instead'
-            })
-
+            // Order.findOneAndUpdate({ _id: req.params.id }, {$push: {purchase : req.body}, new : true})
+            
+            // return
+            
         }
-        // const NewOrder = new Order({}) //använd om vi vill manipulera objektet innan det ska sparas på db
+        // const NewOrder = new Order({
+        //     NewOrder = 
+
+        // }) //använd om vi vill manipulera objektet innan det ska sparas på db
+        
         // NewOrder.save()
+        
         Order.create({ //sparar  produkten på databasen direkt
-            userId:   req.body.userId,
-            purchase: {product:req.body.product, quantity: req.body.quantity}
+            userId:   req.userData.id,
+            purchase: req.body.purchase
+            // purchase: {product: req.body.product, quantity: req.body.quantity}
+
+            // purchase: [{$push: {product: req.body.product}}]
         }) 
         .then(data => { //ovanstående tar tid. .then används för att den ska vänta på att det blir klart innan .then körs
             res.status(201).json({ //201 = created
@@ -95,7 +101,7 @@ exports.updateOrder = (req, res) => {
                 message: 'This Order does not exist'
             })
         }
-        Order.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true}) //allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
+        Order.findOneAndUpdate({ userId: req.params.id }, req.body, { new: true}) // BÖR filtreras på _id och inte userId . allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
         .then(data => { // väntar tills det är klart och uppdateringen skickas tillbaka som data
             res.status(200).json({
                 statusCode: 200,
