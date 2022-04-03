@@ -101,7 +101,7 @@ exports.updateOrder = (req, res) => {
                 message: 'This Order does not exist'
             })
         }
-        Order.findOneAndUpdate({ userId: req.params.id }, req.body, { new: true}) // BÖR filtreras på _id och inte userId . allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
+        Order.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true}) // BÖR filtreras på _id och inte userId . allt i bodyn uppdateras via patch, new: true gör så att vi får den nya uppdaterade versionen i vår find
         .then(data => { // väntar tills det är klart och uppdateringen skickas tillbaka som data
             res.status(200).json({
                 statusCode: 200,
